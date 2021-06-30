@@ -6,3 +6,20 @@
 2021/06/30 07:27:05 short response:  C;P;
 2021/06/30 07:33:18 dial tcp 195.144.107.198:1027: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
 2021/06/30 07:36:20 short response: N.
+2021/06/30 07:38:11 [SUCCESS] mail-editor.png file has been downloaded 
+2021/06/30 07:38:46 [SUCCESS] WinFormClient.png file has been downloaded 
+2021/06/30 07:38:53 [SUCCESS] winceclientSmall.png file has been downloaded 
+2021/06/30 07:38:54 [SUCCESS] winceclient.png file has been downloaded 
+2021/06/30 07:38:56 [SUCCESS] pop3-console-client.png file has been downloaded 
+2021/06/30 07:39:15 [SUCCESS] mail-send-winforms.png file has been downloaded 
+2021/06/30 07:39:15 [SUCCESS] KeyGeneratorSmall.png file has been downloaded 
+2021/06/30 07:39:15 [SUCCESS] WinFormClientSmall.png file has been downloaded 
+2021/06/30 07:39:15 [SUCCESS] readme.txt file has been downloaded 
+2021/06/30 07:39:16 [SUCCESS] pocketftpSmall.png file has been downloaded 
+2021/06/30 07:39:16 [SUCCESS] pocketftp.png file has been downloaded 
+2021/06/30 07:39:17 [SUCCESS] mime-explorer.png file has been downloaded 
+2021/06/30 07:39:17 [SUCCESS] readme.txt file has been downloaded 
+2021/06/30 07:39:17 [SUCCESS] ResumableTransfer.png file has been downloaded 
+2021/06/30 07:39:18 [SUCCESS] pop3-browser.png file has been downloaded 
+2021/06/30 07:39:18 [SUCCESS] imap-console-client.png file has been downloaded 
+2021/06/30 07:39:18 [FAIL] /pub/example/readme.txt could not be downloaded properly.
