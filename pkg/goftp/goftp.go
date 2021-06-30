@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
+	"path"
 	"sync"
 
 	"github.com/jlaffaye/ftp"
@@ -70,18 +72,28 @@ func (s *SSFTP) GetRemoteFileList(source string) map[string]int64 {
 func (self *SSFTP) Copy(source, destination string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	srcFile, err := self.client.Retr(source)
+	read, err := self.client.Retr(source)
 	if err != nil {
-		log.Fatal(ERROR + source + " could not be read ")
+		log.Fatal(err)
 	}
-	defer srcFile.Close()
+	defer read.Close()
 
-	buf, err := ioutil.ReadAll(srcFile)
+	buf, err := ioutil.ReadAll(read)
+	//check buff size
+
+	var localFileName = path.Base(source)
+	dstFilePath := path.Join(destination, localFileName)
+
+	dstFile, err := os.Create(dstFilePath)
 	if err != nil {
-		log.Fatal("ASd")
+		log.Printf(FAIL + "Failed to create file: " + err.Error())
 	}
-	println(string(buf))
+	defer dstFile.Close()
 
-	fmt.Println(srcFile)
+	err = os.WriteFile(dstFilePath, []byte(buf), 0666)
+	if err != nil {
+		log.Printf(FAIL + "Failed to write file: " + err.Error())
+	}
+	log.Printf(SUCCESS+"%s file has been downloaded ", localFileName)
 
 }

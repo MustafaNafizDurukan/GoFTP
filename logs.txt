@@ -25,3 +25,6 @@
 2021/06/29 22:16:46 Connection succeed
 2021/06/29 22:16:46 Authetication succeed
 2021/06/29 22:16:47 [ERROR] /100MB.zip could not be read 
+2021/06/30 05:53:06 Connection succeed
+2021/06/30 05:53:06 Authetication succeed
+2021/06/30 05:53:06 [ERROR] /upload/speedtest.zip could not be read 

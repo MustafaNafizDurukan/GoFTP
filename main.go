@@ -1,11 +1,14 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"sync"
+	"time"
 
+	"github.com/jlaffaye/ftp"
 	. "github.com/whytehack/goftp/pkg/constants"
 	. "github.com/whytehack/goftp/pkg/file"
 	"github.com/whytehack/goftp/pkg/goftp"
@@ -26,6 +29,8 @@ func areFilesCorrect(c *goftp.SSFTP) {
 }
 
 func main() {
+	deneme()
+
 	f, err := os.OpenFile("logs.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf(ERROR+"error opening file: %v", err)
@@ -62,5 +67,45 @@ func main() {
 	wg.Wait()
 
 	areFilesCorrect(client)
+
+}
+
+func deneme() {
+	c, err := ftp.Dial("test.rebex.net:21", ftp.DialWithTimeout(5*time.Second))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = c.Login("demo", "password")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	r, err := c.Retr("/readme.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer r.Close()
+
+	buf, err := ioutil.ReadAll(r)
+	println(string(buf))
+	// Do something with the FTP conn
+
+	if err := c.Quit(); err != nil {
+		log.Fatal(err)
+	}
+
+	var localFileName = path.Base("/readme.txt")
+	dstFile, err := os.Create(path.Join("C:\\Users\\musta\\Desktop\\Files", localFileName))
+	if err != nil {
+		log.Printf(FAIL + "Failed to create file: " + err.Error())
+	}
+	defer dstFile.Close()
+	dst := "C:\\Users\\musta\\Desktop\\Files\\readme.txt"
+	err = os.WriteFile(dst, []byte(buf), 0666)
+	if err != nil {
+		log.Printf(FAIL + "Failed to write file: " + err.Error())
+	}
+	log.Printf(SUCCESS+"%s file has been downloaded ", localFileName)
 
 }
