@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"sync"
 	"time"
 
 	"github.com/jlaffaye/ftp"
@@ -37,6 +38,8 @@ func main() {
 	defer f.Close()
 	log.SetOutput(f)
 
+	var wg sync.WaitGroup
+
 	client, err := goftp.New(
 		"demo",
 		"password",
@@ -57,10 +60,11 @@ func main() {
 
 	for element, _ := range remoteFileList {
 		if localFileList[path.Base(element)] != remoteFileList[element] {
-
-			client.Copy(element, "C:\\Users\\musta\\Desktop\\Files")
+			wg.Add(1)
+			go client.Copy(element, "C:\\Users\\musta\\Desktop\\Files", &wg)
 		}
 	}
+	wg.Wait()
 
 	areFilesCorrect(client)
 

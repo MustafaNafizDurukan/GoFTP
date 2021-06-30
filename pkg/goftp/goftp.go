@@ -6,9 +6,10 @@ import (
 	"log"
 	"os"
 	"path"
+	"sync"
 
 	"github.com/jlaffaye/ftp"
-	. "github.com/whytehack/goftp/pkg/constants"
+	"github.com/whytehack/goftp/pkg/constants"
 )
 
 type SSFTP struct {
@@ -26,12 +27,12 @@ func New(user, password, host string) (*SSFTP, error) {
 	host = fmt.Sprintf("%s:21", host)
 	c, err := ftp.Dial(host, ftp.DialWithTimeout(0))
 	if err != nil {
-		log.Fatal(FAIL + "Failed to dial: " + err.Error())
+		log.Fatal(constants.FAIL + "Failed to dial: " + err.Error())
 	}
 
 	err = c.Login(user, password)
 	if err != nil {
-		log.Fatal(FAIL + "Failed to login to client: " + err.Error())
+		log.Fatal(constants.FAIL + "Failed to login to client: " + err.Error())
 	}
 
 	binsftp := &SSFTP{
@@ -47,7 +48,7 @@ func (s *SSFTP) GetRemoteFileList(source string) map[string]int64 {
 	for w.Next() {
 
 		if err := w.Err(); err != nil {
-			fmt.Println(err.Error())
+			log.Println(err.Error())
 			continue
 		}
 
@@ -57,7 +58,6 @@ func (s *SSFTP) GetRemoteFileList(source string) map[string]int64 {
 		}
 
 		if w.Path() != "" {
-			fmt.Println(w.Path(), fmt.Sprint(fi.Size))
 			fileNames[w.Path()] = int64(fi.Size)
 		}
 
@@ -66,9 +66,10 @@ func (s *SSFTP) GetRemoteFileList(source string) map[string]int64 {
 	return fileNames
 }
 
-func (self *SSFTP) Copy(source, destination string) {
+func (s *SSFTP) Copy(source, destination string, wg *sync.WaitGroup) {
+	defer wg.Done()
 
-	read, err := self.client.Retr(source)
+	read, err := s.client.Retr(source)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -76,7 +77,7 @@ func (self *SSFTP) Copy(source, destination string) {
 
 	buf, err := ioutil.ReadAll(read)
 	if err != nil {
-		log.Printf(ERROR + "Failed to read file: " + err.Error())
+		log.Printf(constants.ERROR + "Failed to read file: " + err.Error())
 	}
 
 	var localFileName = path.Base(source)
@@ -84,21 +85,15 @@ func (self *SSFTP) Copy(source, destination string) {
 
 	dstFile, err := os.Create(dstFilePath)
 	if err != nil {
-		log.Printf(FAIL + "Failed to create file: " + err.Error())
+		log.Printf(constants.FAIL + "Failed to create file: " + err.Error())
 	}
 	defer dstFile.Close()
-	/*
-		_, err = dstFile.Write([]byte(buf))
-		if err != nil {
-			log.Printf(ERROR + "Failed to write file: " + err.Error())
-		} //Burada tekrar kaç byte indirildiğine bakıp daha sonra da bu byte sayısını kontrol edebilirim
 
-		//Bir de bunu dene
-	*/
-	err = os.WriteFile(dstFilePath, []byte(buf), 0666)
+	_, err = dstFile.Write([]byte(buf))
 	if err != nil {
-		log.Printf(FAIL + "Failed to write file: " + err.Error())
-	}
-	log.Printf(SUCCESS+"%s file has been downloaded ", localFileName)
+		log.Printf(constants.ERROR + "Failed to write file: " + err.Error())
+	} //Burada tekrar kaç byte indirildiğine bakıp daha sonra da bu byte sayısını kontrol edebilirim
+
+	log.Printf(constants.SUCCESS+"%s file has been downloaded ", localFileName)
 
 }
