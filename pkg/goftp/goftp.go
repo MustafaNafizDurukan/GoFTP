@@ -89,7 +89,7 @@ func (s *SSFTP) Copy(source, destination string, wg *sync.WaitGroup) {
 	}
 	defer dstFile.Close()
 
-	_, err = dstFile.Write([]byte(buf))
+	_, err = dstFile.Write(buf)
 	if err != nil {
 		log.Printf(constants.ERROR + "Failed to write file: " + err.Error())
 	} //Burada tekrar kaç byte indirildiğine bakıp daha sonra da bu byte sayısını kontrol edebilirim

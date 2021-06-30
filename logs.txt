@@ -1,3 +1,5 @@
 2021/06/30 07:47:38 [FAIL] /readme.txt could not be downloaded properly.
 2021/06/30 07:50:29 short response: N.
 2021/06/30 07:51:05 229 Entering Extended Passive Mode (|||1035|)
+2021/06/30 08:14:02 short response: N.
+2021/06/30 08:14:46 short response:  C;P;

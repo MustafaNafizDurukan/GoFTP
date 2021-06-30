@@ -87,13 +87,9 @@ func deneme() {
 	}
 	defer r.Close()
 
-	buf, err := ioutil.ReadAll(r)
+	buf, _ := ioutil.ReadAll(r)
 	println(string(buf))
 	// Do something with the FTP conn
-
-	if err := c.Quit(); err != nil {
-		log.Fatal(err)
-	}
 
 	var localFileName = path.Base("/pub/example/KeyGenerator.png")
 	dstFile, err := os.Create(path.Join("C:\\Users\\musta\\Desktop\\Files", localFileName))
@@ -102,10 +98,13 @@ func deneme() {
 	}
 	defer dstFile.Close()
 	dst := "C:\\Users\\musta\\Desktop\\Files\\KeyGenerator.png"
-	err = os.WriteFile(dst, []byte(buf), 0666)
+	err = os.WriteFile(dst, buf, 0666)
 	if err != nil {
 		log.Printf(FAIL + "Failed to write file: " + err.Error())
 	}
 	log.Printf(SUCCESS+"%s file has been downloaded ", localFileName)
 
+	if err := c.Quit(); err != nil {
+		log.Fatal(err)
+	}
 }
