@@ -8,7 +8,7 @@ import (
 )
 
 func getFileSize(FileName string) int64 {
-	//"C:\\Users\\musta\\Desktop\\imap-console-client.png"
+
 	info, err := os.Stat(FileName)
 	if err != nil {
 		log.Fatal(err)

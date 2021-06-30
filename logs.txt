@@ -1,30 +1,8 @@
-2021/06/29 22:13:06 Connection succeed
-2021/06/29 22:13:07 Authetication succeed
-2021/06/29 22:14:03 [FAIL] /512KB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /20MB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /upload/upload_file.txt could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /1MB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /1KB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /1GB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /10GB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /1000GB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /3MB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /2MB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /50MB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /500MB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /200MB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /10MB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /100GB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /upload/el0gpndqus3uv5vt8ba4lpct6v.txt could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /5MB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /100MB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /100KB.zip could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /upload/testfile could not be downloaded properly.
-2021/06/29 22:14:03 [FAIL] /upload/Handy356204100324092.bin could not be downloaded properly.
-2021/06/29 22:14:03 Local path is empty! Check your local directory.
-2021/06/29 22:16:46 Connection succeed
-2021/06/29 22:16:46 Authetication succeed
-2021/06/29 22:16:47 [ERROR] /100MB.zip could not be read 
-2021/06/30 05:53:06 Connection succeed
-2021/06/30 05:53:06 Authetication succeed
-2021/06/30 05:53:06 [ERROR] /upload/speedtest.zip could not be read 
+2021/06/30 07:11:37 dial tcp 195.144.107.198:1029: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+2021/06/30 07:18:17 [SUCCESS] WinFormClientSmall.png file has been downloaded 
+2021/06/30 07:18:17 [SUCCESS] WinFormClientSmall.png file has been downloaded 
+2021/06/30 07:26:01 [SUCCESS] KeyGenerator.png file has been downloaded 
+2021/06/30 07:26:35 invalid response code: EST STREAM
+2021/06/30 07:27:05 short response:  C;P;
+2021/06/30 07:33:18 dial tcp 195.144.107.198:1027: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+2021/06/30 07:36:20 short response: N.

@@ -27,15 +27,13 @@ func New(user, password, host string) (*SSFTP, error) {
 	host = fmt.Sprintf("%s:21", host)
 	c, err := ftp.Dial(host, ftp.DialWithTimeout(0))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(FAIL + "Failed to dial: " + err.Error())
 	}
-	log.Println("Connection succeed")
 
 	err = c.Login(user, password)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(FAIL + "Failed to login to client: " + err.Error())
 	}
-	log.Println("Authetication succeed")
 
 	binsftp := &SSFTP{
 		client: c,
@@ -79,7 +77,9 @@ func (self *SSFTP) Copy(source, destination string, wg *sync.WaitGroup) {
 	defer read.Close()
 
 	buf, err := ioutil.ReadAll(read)
-	//check buff size
+	if err != nil {
+		log.Printf(ERROR + "Failed to read file: " + err.Error())
+	}
 
 	var localFileName = path.Base(source)
 	dstFilePath := path.Join(destination, localFileName)
@@ -89,7 +89,14 @@ func (self *SSFTP) Copy(source, destination string, wg *sync.WaitGroup) {
 		log.Printf(FAIL + "Failed to create file: " + err.Error())
 	}
 	defer dstFile.Close()
+	/*
+		_, err = dstFile.Write([]byte(buf))
+		if err != nil {
+			log.Printf(ERROR + "Failed to write file: " + err.Error())
+		} //Burada tekrar kaç byte indirildiğine bakıp daha sonra da bu byte sayısını kontrol edebilirim
 
+		//Bir de bunu dene
+	*/
 	err = os.WriteFile(dstFilePath, []byte(buf), 0666)
 	if err != nil {
 		log.Printf(FAIL + "Failed to write file: " + err.Error())

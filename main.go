@@ -24,12 +24,12 @@ func areFilesCorrect(c *goftp.SSFTP) {
 	}
 
 	if len(localFileList) == 0 {
-		log.Printf("Local path is empty! Check your local directory.")
+		log.Printf(FAIL + "Local path is empty! Check your local directory.")
 	}
 }
 
 func main() {
-	deneme()
+	//deneme()
 
 	f, err := os.OpenFile("logs.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
@@ -41,12 +41,12 @@ func main() {
 	var wg sync.WaitGroup
 
 	client, err := goftp.New(
-		"anonymous",
-		"anonymous",
-		"speedtest.tele2.net",
+		"demo",
+		"password",
+		"test.rebex.net",
 	)
 	if err != nil {
-		log.Println("Client could not be initialize")
+		log.Println(ERROR + "Client could not be initialize")
 	}
 	defer client.Close()
 
@@ -81,7 +81,7 @@ func deneme() {
 		log.Fatal(err)
 	}
 
-	r, err := c.Retr("/readme.txt")
+	r, err := c.Retr("/pub/example/KeyGenerator.png")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -95,13 +95,13 @@ func deneme() {
 		log.Fatal(err)
 	}
 
-	var localFileName = path.Base("/readme.txt")
+	var localFileName = path.Base("/pub/example/KeyGenerator.png")
 	dstFile, err := os.Create(path.Join("C:\\Users\\musta\\Desktop\\Files", localFileName))
 	if err != nil {
 		log.Printf(FAIL + "Failed to create file: " + err.Error())
 	}
 	defer dstFile.Close()
-	dst := "C:\\Users\\musta\\Desktop\\Files\\readme.txt"
+	dst := "C:\\Users\\musta\\Desktop\\Files\\KeyGenerator.png"
 	err = os.WriteFile(dst, []byte(buf), 0666)
 	if err != nil {
 		log.Printf(FAIL + "Failed to write file: " + err.Error())
