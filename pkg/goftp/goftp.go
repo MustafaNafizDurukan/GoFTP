@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"path"
-	"sync"
 
 	"github.com/jlaffaye/ftp"
 	"github.com/whytehack/goftp/pkg/constants"
@@ -66,8 +65,7 @@ func (s *SSFTP) GetRemoteFileList(source string) map[string]int64 {
 	return fileNames
 }
 
-func (s *SSFTP) Copy(source, destination string, wg *sync.WaitGroup) {
-	defer wg.Done()
+func (s *SSFTP) Copy(source, destination string) {
 
 	read, err := s.client.Retr(source)
 	if err != nil {
