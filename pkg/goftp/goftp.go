@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"sync"
 
 	"github.com/jlaffaye/ftp"
 	"github.com/whytehack/goftp/pkg/constants"
@@ -24,7 +25,7 @@ func (s *SSFTP) Close() {
 
 func New(user, password, host string) (*SSFTP, error) {
 	host = fmt.Sprintf("%s:21", host)
-	c, err := ftp.Dial(host, ftp.DialWithTimeout(0))
+	c, err := ftp.Dial(host, ftp.DialWithDisabledEPSV(true))
 	if err != nil {
 		log.Fatal(constants.FAIL + "Failed to dial: " + err.Error())
 	}
@@ -65,13 +66,14 @@ func (s *SSFTP) GetRemoteFileList(source string) map[string]int64 {
 	return fileNames
 }
 
-func (s *SSFTP) Copy(source, destination string) {
+func (s *SSFTP) Copy(source, destination string, wg *sync.WaitGroup) {
+	defer wg.Done()
 
 	read, err := s.client.Retr(source)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer read.Close()
+	read.Close()
 
 	buf, err := ioutil.ReadAll(read)
 	if err != nil {

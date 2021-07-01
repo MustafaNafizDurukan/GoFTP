@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"sync"
 
 	. "github.com/whytehack/goftp/pkg/Zipman"
 	. "github.com/whytehack/goftp/pkg/constants"
@@ -51,12 +52,17 @@ func main() {
 
 	localFileList := GetLocalFiles("C:\\Users\\musta\\Desktop\\Files")
 
+	var wg sync.WaitGroup
+
 	for element, _ := range remoteFileList {
 		if localFileList[path.Base(element)] != remoteFileList[element] {
-			client.Copy(element, "C:\\Users\\musta\\Desktop\\Files")
+			wg.Add(1)
+			go client.Copy(element, "C:\\Users\\musta\\Desktop\\Files", &wg)
 		}
 
 	}
+
+	wg.Wait()
 	areFilesCorrect(client)
 	Unzip("C:\\Users\\musta\\Desktop\\Files")
 }
