@@ -2,39 +2,33 @@ package zipman
 
 import (
 	"archive/zip"
-	"fmt"
 	"io"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
-	"github.com/whytehack/goftp/pkg/file"
+	"github.com/whytehack/goftp/pkg/constants"
 )
 
-func Unzip(localPath string) {
-	destZipPath := "C:\\Users\\musta\\Desktop\\Files\\Clean"
-	localFilesList := file.GetLocalFiles(localPath)
-	for element := range localFilesList {
-		err := Unzipper(path.Join(localPath, element), destZipPath)
-		if err == nil {
-			log.Printf("%s extracted to %s", element, destZipPath)
-		}
-	}
-}
+func Unzip(src, dest string) {
 
-func Unzipper(src, dest string) error {
 	r, err := zip.OpenReader(src)
 	if err != nil {
-		return err
+		return
 	}
-	defer func() {
-		if err := r.Close(); err != nil {
-			panic(err)
+	defer func() error {
+		err := r.Close()
+		if err != nil {
+			log.Println(constants.ERROR + src + "Zip file could not be closed properly")
+			return err
 		}
+		return nil
 	}()
+	log.Printf(constants.RUNNING+"%s is extracting... \n", src)
 
+	dest += "\\all"
+	dest += "\\" + strings.TrimRight(filepath.Base(src), ".zip")
 	os.MkdirAll(dest, 0755)
 
 	// Closure to address file descriptors issue with all the deferred .Close() methods
@@ -43,17 +37,21 @@ func Unzipper(src, dest string) error {
 		if err != nil {
 			return err
 		}
-		defer func() {
-			if err := rc.Close(); err != nil {
-				panic(err)
+		defer func() error {
+			err := rc.Close()
+			if err != nil {
+				log.Println(constants.ERROR + f.Name + " file could not be closed properly")
+				return err
 			}
+			return nil
 		}()
 
 		path := filepath.Join(dest, f.Name)
 
 		// Check for ZipSlip (Directory traversal)
 		if !strings.HasPrefix(path, filepath.Clean(dest)+string(os.PathSeparator)) {
-			return fmt.Errorf("illegal file path: %s", path)
+			log.Printf(constants.ERROR+"illegal file path: %s \r\n", path)
+			return err
 		}
 
 		if f.FileInfo().IsDir() {
@@ -62,18 +60,26 @@ func Unzipper(src, dest string) error {
 			os.MkdirAll(filepath.Dir(path), f.Mode())
 			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 			if err != nil {
+				log.Printf(constants.ERROR+"%s could not be opened \r\n", f.Name())
 				return err
 			}
-			defer func() {
-				if err := f.Close(); err != nil {
-					panic(err)
+
+			defer func() error {
+				err := f.Close()
+				if err != nil {
+					log.Println(constants.ERROR + f.Name() + " file could not be closed properly")
+					return err
 				}
+				return nil
 			}()
 
-			_, err = io.Copy(f, rc)
+			fileSize, err := io.Copy(f, rc)
 			if err != nil {
+				log.Printf(constants.ERROR+"%s could not be copied \r\n", f.Name())
 				return err
 			}
+
+			log.Printf(constants.SUCCESS+" %s was extracted to %s. Its size is %d \r\n", filepath.Base(f.Name()), f.Name(), fileSize)
 		}
 		return nil
 	}
@@ -81,9 +87,9 @@ func Unzipper(src, dest string) error {
 	for _, f := range r.File {
 		err := extractAndWriteFile(f)
 		if err != nil {
-			return err
+			log.Println(constants.ERROR + "File could not be extracted")
+			return
 		}
 	}
-
-	return nil
+	log.Printf(constants.SUCCESS+"%s has been completely extracted to %s. \r\n", src, dest)
 }
