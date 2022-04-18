@@ -2,104 +2,153 @@ package goftp
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
-	"path"
+	"path/filepath"
+	"sync"
+	"time"
 
-	"github.com/jlaffaye/ftp"
-	"github.com/whytehack/goftp/pkg/constants"
+	"github.com/secsy/goftp"
+	"github.com/whytehack/goftp/pkg/logs"
+	"github.com/whytehack/goftp/pkg/panik"
 )
 
 type SSFTP struct {
-	client *ftp.ServerConn
+	Cli *goftp.Client
 }
 
 func (s *SSFTP) Close() {
-	err := s.client.Quit()
+	err := s.Cli.Close()
 	if err != nil {
 		log.Println(err)
+		return
 	}
+}
+
+func (s *SSFTP) Files(path string, isForwardSlash bool) ([]FileInfo, error) {
+	objects, err := s.Cli.ReadDir(path)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	files := make([]FileInfo, 0)
+
+	var slash string
+	if isForwardSlash {
+		slash = "/"
+	} else {
+		slash = "\\"
+	}
+
+	if path == "/" {
+		slash = ""
+	}
+
+	for _, f := range objects {
+		if f.IsDir() {
+			f, err := s.Files(fmt.Sprintf("%s%s%s", path, slash, f.Name()), isForwardSlash)
+			if err != nil {
+				logs.ERROR.Printf("%v \n", err)
+			}
+
+			files = append(files, f...)
+
+		} else {
+			files = append(files, FileInfo{
+				Name: fmt.Sprintf("%s%s%s", path, slash, f.Name()),
+				Date: f.ModTime(), //f.ModTime().Format("02-01-2006"),
+				Size: f.Size(),
+			})
+		}
+	}
+
+	return files, nil
 }
 
 func New(user, password, host string) (*SSFTP, error) {
-	host = fmt.Sprintf("%s:21", host)
-	c, err := ftp.Dial(host, ftp.DialWithTimeout(0))
-	if err != nil {
-		log.Println(constants.FAIL + "Failed to dial: " + err.Error())
+	config := goftp.Config{
+		User:               user,
+		Password:           password,
+		ConnectionsPerHost: 10,
+		Timeout:            10 * time.Second,
 	}
 
-	err = c.Login(user, password)
+	client, err := goftp.DialConfig(config, host)
 	if err != nil {
-		log.Println(constants.FAIL + "Failed to login to client: " + err.Error())
+		logs.ERROR.Printf("Can not dial ftp: %v \n", err)
+		return nil, err
 	}
 
-	binsftp := &SSFTP{
-		client: c,
-	}
-	return binsftp, nil
+	return &SSFTP{Cli: client}, nil
 }
 
-func (s *SSFTP) GetRemoteFileList(source string) map[string]int64 {
-	fileNames := make(map[string]int64)
-
-	w := s.client.Walk(source)
-	for w.Next() {
-
-		if err := w.Err(); err != nil {
-			log.Println(err.Error())
-			continue
-		}
-
-		fi := w.Stat()
-		if fi.Type == ftp.EntryTypeFolder {
-			continue
-		}
-
-		if w.Path() != "" {
-			fileNames[w.Path()] = int64(fi.Size)
-			log.Println(constants.STATUS + w.Path() + " file found on ftp server! Its size is " + fmt.Sprint(fi.Size))
-		}
-
-	}
-
-	return fileNames
+type FileInfo struct {
+	Name string
+	Size int64
+	Date time.Time
 }
 
-func (s *SSFTP) Copy(source, destination string) (string, error) {
+func (s *SSFTP) DownloadWorker(i int, remoteFileChan <-chan *DownloadFileInfo, downloadedFileChan chan<- *DownloadFileInfo, wait *sync.WaitGroup) {
+	defer wait.Done()
+	defer panik.Catch()
 
-	read, err := s.client.Retr(source)
-	if err != nil {
-		log.Fatal(err)
+	for dfi := range remoteFileChan {
+		err := s.download(i, dfi.Source, dfi.Destination)
+		if err != nil {
+			logs.ERROR.Printf("%v \n", err)
+		} else {
+			downloadedFileChan <- &DownloadFileInfo{
+				Source:      dfi.Destination,
+				Destination: filepath.Dir(dfi.Destination),
+			}
+		}
 	}
-	defer read.Close()
+}
 
-	buf, err := ioutil.ReadAll(read)
+type DownloadFileInfo struct {
+	Source      string
+	Destination string
+}
+
+func (s *SSFTP) download(i int, source, destination string) error {
+	f, err := s.Cli.Stat(source)
 	if err != nil {
-		log.Printf(constants.ERROR + "Failed to read file: " + err.Error())
+		logs.ERROR.Printf("Failed to get file stat for %s: %v \n", source, err)
+		return err
 	}
 
-	var FileName = path.Base(source)
-	dstFilePath := path.Join(destination, FileName)
+	dir := filepath.Dir(destination)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		os.MkdirAll(dir, 0700)
+	}
 
-	createdFile, err := os.Create(dstFilePath)
+	createdFile, err := os.Create(destination)
 	if err != nil {
-		log.Printf(constants.FAIL + "Failed to create file: " + err.Error())
+		logs.ERROR.Printf("Failed to create file for %s: %v \n", destination, err)
+		return err
 	}
 	defer createdFile.Close()
 
-	localFileSize, err := createdFile.Write(buf)
+	log.Println(source, "is downloading from remote server... worker:", i)
+
+	err = s.Cli.Retrieve(source, createdFile)
 	if err != nil {
-		log.Printf(constants.ERROR + "Failed to write file: " + err.Error())
+		logs.ERROR.Printf("Failed to retrieve file for %s: %v \n", source, err)
+		return err
 	}
 
-	if localFileSize != len(buf) {
-		log.Printf(constants.FAIL+"%s could not be downloaded properly.", FileName)
-		return "", err
+	floc, err := os.Stat(destination)
+	if err != nil {
+		logs.ERROR.Printf("Failed to get file stat for %s: %v \n", destination, err)
+		return err
 	}
 
-	log.Printf(constants.SUCCESS+"%s file has been downloaded ", FileName)
+	if floc.Size() != f.Size() {
+		logs.ERROR.Printf("%s could not be downloaded properly. \n", source)
+		return err
+	}
 
-	return dstFilePath, nil
-
+	log.Println(source, "has been downloaded from remote server... worker:", i)
+	return nil
 }

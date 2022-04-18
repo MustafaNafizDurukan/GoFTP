@@ -1,10 +1,10 @@
 package flags
 
 import (
-	"log"
 	"os"
 
 	"github.com/jessevdk/go-flags"
+	"github.com/whytehack/goftp/pkg/logs"
 )
 
 var parser *flags.Parser
@@ -15,7 +15,7 @@ func Parse(out interface{}, params []string) ([]string, error) {
 	parser = flags.NewParser(out, flags.PrintErrors|flags.PassDoubleDash|flags.IgnoreUnknown)
 	positionalArgs, err := parser.ParseArgs(params) // No need to handle errors, as they will be written by the library
 	if err != nil {
-		log.Printf("Error parsing parameters %v, %v", params, err)
+		logs.ERROR.Printf("Error parsing parameters %v, %v \n", params, err)
 		return nil, err
 	}
 	return positionalArgs[1:], nil

@@ -15,11 +15,13 @@ var Config *configuration
 var path string
 
 type configuration struct {
-	RemotePath string `yaml:"remotepath"`
-	LocalPath  string `yaml:"localpath"`
-	Host       string `yaml:"host"`
-	UserName   string `yaml:"username"`
-	Password   string `yaml:"password"`
+	RemotePath     string `yaml:"remotepath"`
+	LocalPath      string `yaml:"localpath"`
+	Host           string `yaml:"host"`
+	UserName       string `yaml:"username"`
+	Password       string `yaml:"password"`
+	PathsNotLookAt string `yaml:"pathsnotlookat"`
+	ZipPassword    string `yaml:"zippassword"`
 }
 
 func EndsWithAny(haystack string, caseInsensitive bool, needles ...string) bool {
@@ -53,6 +55,7 @@ func FileExists(filePath string) bool {
 // Init loads a config file from the provided path.
 // Providing an empty path for filePath parameter will load the default config file
 func Init(name string) error {
+
 	var err error
 	// Save to global path
 	path = name
@@ -62,7 +65,7 @@ func Init(name string) error {
 	// Make sure it exists
 	path, err = filepath.Abs(path)
 	if err != nil {
-		log.Printf("Can not get absolute path for config path: %s, err: %v", name, err)
+		log.Printf("Can not get absolute path for config path: %s, err: %v \n", name, err)
 		return err
 	}
 	// Create directories
@@ -84,12 +87,12 @@ func Path() string {
 func load(filePath string) error {
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		log.Printf("Can not read config file: %s, %v", filePath, err)
+		log.Printf("Can not read config file: %s, %v \n", filePath, err)
 		return err
 	}
 	err = yaml.Unmarshal(data, &Config)
 	if err != nil {
-		log.Printf("Can not deserialize yaml file: %s, %v", filePath, err)
+		log.Printf("Can not deserialize yaml file: %s, %v \n", filePath, err)
 		return err
 	}
 	return nil
@@ -105,12 +108,12 @@ func (self *configuration) save() error {
 
 	data, err := yaml.Marshal(self)
 	if err != nil {
-		log.Printf("Can not serialize yaml file: %s, %v", path, err)
+		log.Printf("Can not serialize yaml file: %s, %v \n", path, err)
 		return err
 	}
 	err = ioutil.WriteFile(path, data, os.ModePerm)
 	if err != nil {
-		log.Printf("Can not write yaml file: %s, %v", path, err)
+		log.Printf("Can not write yaml file: %s, %v \n", path, err)
 		return err
 	}
 	return nil
