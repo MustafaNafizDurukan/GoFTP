@@ -1,6 +1,0 @@
-2021/07/13 16:56:16 [STATUS] Host has been set to  127.0.0.1
-2021/07/13 16:56:16 [STATUS] Local path has been set to  C:\Users\musta\Desktop\Files
-2021/07/13 16:56:16 [STATUS] Password has been set to  password
-2021/07/13 16:56:16 [STATUS] Remote path has been set to  /
-2021/07/13 16:56:16 [STATUS] Username has been set to  demo
-2021/07/13 16:56:16 [STATUS] /a.zip file found on ftp server! Its size is 104683686
